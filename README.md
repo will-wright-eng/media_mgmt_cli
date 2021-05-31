@@ -5,15 +5,17 @@ A simple CLI to manage media in S3
 1. [Summary](README.md#summary)
 2. [Resources](README.md#resources)
 
-### Project setup / best practices
+### best practices
 
 - virtual environment
 - yml configs
 - logging
 - unit tests (and integration tests)
 
-upload -> search to confirm
-search global
+### Workflows
+
+upload -> search to confirm (check local size is equal to S3 object size) -> optional delete local object
+search global -> restore from glacier -> check status -> copy to local once restored
 
 ### CLI Features
 
@@ -25,12 +27,10 @@ agrs --operation: uplaod_local (defaults to all in directory), search_global, do
 - uplaod individual movies, not collections of movies (TV shows break this rule)
 - 
 
+### Process notes
 
-### Process
-
-1. `python3 -m venv s3_cli`
-2. `pip install pyyaml`
-3. 
+`python3 -m venv s3_cli`
+`pip freeze > requirements.txt`
 
 ### Resources used
 
