@@ -14,18 +14,26 @@ A simple CLI to manage media in S3
 
 ### Workflows
 
-upload -> search to confirm (check local size is equal to S3 object size) -> optional delete local object
-search global -> restore from glacier -> check status -> copy to local once restored
+upload
+	-> search to confirm (check local size is equal to S3 object size) 
+	-> optional delete local object
+
+search global 
+	-> restore from glacier 
+	-> check status 
+	-> copy to local once restored
 
 ### CLI Features
 
-agrs --operation: uplaod_local (defaults to all in directory), search_global, download, multifile_download
-
+agrs --operation: 
+	uplaod_local (defaults to all in directory), 
+	search_global, 
+	download, 
+	multifile_download
 
 **upload**
 - ideal format for naming (title, year, format)
 - uplaod individual movies, not collections of movies (TV shows break this rule)
-- 
 
 ### Process notes
 
@@ -68,3 +76,11 @@ aws s3api head-object --bucket <bucket> --key media_uploads/<filename>
 #eg
 aws s3 cp s3://<bucket>/media_uploads/<filename> <filename>
 ```
+
+### CLI tookkits
+
+- https://docs.python-guide.org/scenarios/cli/
+- https://click.palletsprojects.com/en/8.0.x/
+- https://pythonhosted.org/pyCLI/
+- https://realpython.com/command-line-interfaces-python-argparse/
+- https://medium.com/@shamir.stav_83310/lets-create-a-cli-with-python-part-1-ae4fe9e0258b
