@@ -1,3 +1,9 @@
+test.*
+Untitled.*
+config.yml
+/s3_cli/*
+.DS_Store
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
