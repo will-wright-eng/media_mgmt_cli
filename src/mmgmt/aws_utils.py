@@ -1,5 +1,15 @@
 """
-utility functions for general use
+# functions
+- upload_file
+- download_file
+    - download_from_standard
+    - download_from_glacier
+        - restore_from_glacier
+        - check_obj_status
+- search_keyword_global
+    - search_keyword_s3
+    - search_keyword_local
+
 Author: William Wright
 """
 
@@ -26,7 +36,7 @@ def upload_file(s3_client, file_name, bucket, object_name=None):
 
     try:
         # response = s3_client.upload_file(file_name, bucket, object_name)
-        with open(file_name, 'rb') as data:
+        with open(file_name, "rb") as data:
             s3.upload_fileobj(data, bucket, object_name)
     except ClientError as e:
         logging.error(e)
@@ -121,7 +131,7 @@ def check_obj_status(s3_client, file_name, bucket, object_name=None):
 def download_from_glacier(s3_client, file_name, bucket, object_name=None):
     """download_from_glacier docstring"""
     import time
-    restore_from_glacier(s3_client, file_name, bucket, object_name=None):
+    restore_from_glacier(s3_client, file_name, bucket, object_name=None)
     while resored==False:
         check_obj_status()
         time.sleep(60)

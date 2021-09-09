@@ -5,13 +5,6 @@ A simple CLI to manage media in S3
 1. [Summary](README.md#summary)
 2. [Resources](README.md#resources)
 
-### best practices
-
-- virtual environment
-- yml configs
-- logging
-- unit tests (and integration tests)
-
 ### Workflows
 
 upload
@@ -37,8 +30,8 @@ agrs --operation:
 
 ### Process notes
 
-`python3 -m venv s3_cli`
-`pip freeze > requirements.txt`
+- `pip freeze > requirements.txt`
+- `pip install --editable .`
 
 ### Resources used
 
@@ -84,3 +77,14 @@ aws s3 cp s3://<bucket>/media_uploads/<filename> <filename>
 - https://pythonhosted.org/pyCLI/
 - https://realpython.com/command-line-interfaces-python-argparse/
 - https://medium.com/@shamir.stav_83310/lets-create-a-cli-with-python-part-1-ae4fe9e0258b
+
+### best practices
+
+- virtual environment
+```bash
+python -m venv ./venv
+source venv/bin/activate
+```
+- yml configs
+- logging
+- unit tests (and integration tests)
