@@ -6,8 +6,8 @@ from pathlib import Path
 import click
 import boto3
 
-from mmgmt.utils.aws_utils import AwsStorageMgmt
-import mmgmt.utils.utils as utils
+from .utils.aws import AwsStorageMgmt
+from .utils import utils as utils
 
 aws = AwsStorageMgmt()
 
