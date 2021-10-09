@@ -48,16 +48,10 @@ def upload(tier, filename):
         aws.upload_file(s3_client, filename, bucket, object_name=None)
 
 
-mmgmt.add_command(upload)
-
-
 @click.command()
 @click.option("-f", "--filename", "filename", required=True)
 def download(filename):
     click.echo(f"Downloading {filename} from S3...")
-
-
-mmgmt.add_command(download)
 
 
 def abort_if_false(ctx, param, value):
@@ -78,9 +72,6 @@ def delete(filename):
     click.echo(f"{filename} dropped from S3")
 
 
-mmgmt.add_command(delete)
-
-
 @click.command()
 @click.option("-w", "--keyword", "keyword", required=True)
 @click.option("-l", "--location", "location", required=False)
@@ -91,4 +82,7 @@ def search(keyword, location):
         click.echo(f"Searching local and S3 for {keyword}...")
 
 
+mmgmt.add_command(upload)
+mmgmt.add_command(download)
+mmgmt.add_command(delete)
 mmgmt.add_command(search)

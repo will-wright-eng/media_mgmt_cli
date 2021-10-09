@@ -19,8 +19,8 @@ search global
 ### CLI Features
 
 agrs --operation: 
-	uplaod_local (defaults to all in cwd), 
-	search_global, 
+	uplaod_local (defaults to all in cwd, unless --name specified), 
+	search (default to --location = global), 
 	download, 
 	multifile_download
 
