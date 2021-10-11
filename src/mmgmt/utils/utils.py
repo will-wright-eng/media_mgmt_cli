@@ -3,7 +3,7 @@ import yaml
 
 
 def clean_string(string: str) -> str:
-    string = "".join(e for e in string if e.isalnum() or e == " " or e=='/')
+    string = "".join(e for e in string if e.isalnum() or e == " " or e == "/")
     string = string.replace("  ", " ").replace("  ", " ").replace(" ", "_")
     return string
 
