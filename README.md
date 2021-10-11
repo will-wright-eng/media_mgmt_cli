@@ -29,9 +29,11 @@ agrs --operation:
 - uplaod individual movies, not collections of movies (TV shows break this rule)
 
 ### Process notes
-
+From the repo root directory:
 - `pip freeze > requirements.txt`
 - `pip install --editable .`
+
+`which mmgmt` shows where the binary was installed
 
 ### Resources used
 

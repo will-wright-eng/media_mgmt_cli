@@ -18,21 +18,36 @@ def mmgmt():
 
 
 @click.command()
-# @click.option("-t", "--storage-tier", "tier", default="standard")
-@click.option("-f", "--filename", "filename", required=False)
-def upload(tier, filename):
+@click.option("-f", "--file-or-dir", "file-or-directory", required=False)
+def upload(file_or_dir=None) -> bool:
     p = Path(__file__).parent
     localfiles = os.listdir(p)
-    if filename in localfiles:
-        click.echo(f"Uploading {filename} to S3...")
-        aws.upload_file(file_name=filename)
-    else:
-        # filename = None
-        # click.echo(f"Uploading all Media files to S3")
-        click.echo(f"Invalid filename")
-        click.echo(f"Multi-file upload incomplete, exiting without upload")
-        return False
-
+    files_created = []
+    try:
+        if file_or_dir:
+            if file_or_dir in localfiles:
+                click.echo(f"Uploading {file_or_dir} to S3...")
+                zip_file = utils.zip_process(file_or_dir)
+                files_created.append(zip_file)
+                aws.upload_file(file_name=zip_file)
+            else:
+                click.echo(f"Invalid file_or_dir")
+                return False
+        else:
+            click.echo(f"Uploading all Media objects to S3")
+            click.echo(f"Multi-file upload incomplete, exiting without upload")
+            for file in localfiles:
+                click.echo(f"Uploading {file}...")
+                zip_file = utils.zip_process(file_or_dir)
+                files_created.append(zip_file)
+                aws.upload_file(file_name=zip_file)
+    except Exception as e:
+        print(e)
+    finally:
+        # remove all zip files from dir
+        if files_created:
+            for file in files_created:
+                os.remove(file)
     return True
 
 

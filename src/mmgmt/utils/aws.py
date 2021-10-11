@@ -22,7 +22,8 @@ from botocore.exceptions import ClientError
 
 class AwsStorageMgmt:
     def __init__(self):
-        self.s3_client = boto3.resource("s3")
+        self.s3_resour = boto3.resource("s3")
+        self.s3_client = boto3.client('s3')
         self.bucket = os.getenv("AWS_BUCKET")
 
     def upload_file(self, file_name, object_name=None):
