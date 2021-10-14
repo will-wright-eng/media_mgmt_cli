@@ -93,23 +93,10 @@ class AwsStorageMgmt:
         )
         return response
 
-    def search_keyword_s3(self):
-        """search for keywork in S3 media files"""
-        return
-
-    def search_keyword_local(self):
-        """search for keyword among local media files"""
-        return
-
-    def search_keyword_global(self):
-        """search_keyword docstring
-
-        :param file_name: download to this file name
-        :param bucket: Bucket to download from
-        :param object_name: S3 object name. If not specified then file_name is used
-        :return: True if file was uploaded, else False
-        """
-        return
+    def get_bucket_object_keys(self):
+        my_bucket = self.s3_resour.Bucket(os.getenv("AWS_MEDIA_BUCKET"))
+        # my_bucket = s3_resour.Bucket('media-backup-files')
+        return [obj.key for obj in my_bucket.objects.all()]
 
     def check_obj_status(self, file_name, object_name=None):
         """check_obj_status docstring
@@ -130,7 +117,7 @@ class AwsStorageMgmt:
         """download_from_glacier docstring"""
         import time
 
-        restore_from_glacier(self.s3_client, file_name, self.bucket, object_name=None)
+        self.restore_from_glacier(self.s3_client, file_name, self.bucket, object_name=None)
         resored = False
         while resored == False:
             time.sleep(30)
@@ -141,3 +128,21 @@ class AwsStorageMgmt:
 
         response = self.download_file(file_name=file_name)
         return response
+
+    # def search_keyword_s3(self):
+    #     """search for keywork in S3 media files"""
+    #     return
+
+    # def search_keyword_local(self):
+    #     """search for keyword among local media files"""
+    #     return
+
+    # def search_keyword_global(self):
+    #     """search_keyword docstring
+
+    #     :param file_name: download to this file name
+    #     :param bucket: Bucket to download from
+    #     :param object_name: S3 object name. If not specified then file_name is used
+    #     :return: True if file was uploaded, else False
+    #     """
+    #     return

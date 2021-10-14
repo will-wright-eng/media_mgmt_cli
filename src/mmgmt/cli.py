@@ -18,37 +18,75 @@ def mmgmt():
 
 
 @click.command()
-@click.option("-f", "--file-or-dir", "file-or-directory", required=False)
-def upload(file_or_dir=None) -> bool:
+@click.option("-f", "--file-or-dir", "file_or_dir", required=False, default=None)
+def upload(file_or_dir):
     p = Path(__file__).parent
     localfiles = os.listdir(p)
     files_created = []
     try:
         if file_or_dir:
             if file_or_dir in localfiles:
-                click.echo(f"Uploading {file_or_dir} to S3...")
                 zip_file = utils.zip_process(file_or_dir)
+                click.echo(f"Uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}")
                 files_created.append(zip_file)
-                aws.upload_file(file_name=zip_file)
+                resp = aws.upload_file(file_name=zip_file)
+                click.echo(f"Success? {resp}")
             else:
-                click.echo(f"Invalid file_or_dir")
+                click.echo(f"Invalid file or directory")
                 return False
         else:
             click.echo(f"Uploading all Media objects to S3")
-            click.echo(f"Multi-file upload incomplete, exiting without upload")
-            for file in localfiles:
-                click.echo(f"Uploading {file}...")
+            for file_or_dir in localfiles:
                 zip_file = utils.zip_process(file_or_dir)
                 files_created.append(zip_file)
-                aws.upload_file(file_name=zip_file)
+                click.echo(f"Uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}")
+                resp = aws.upload_file(file_name=zip_file)
+                click.echo(f"Success? {resp}")
     except Exception as e:
-        print(e)
+        click.echo(e)
     finally:
         # remove all zip files from dir
         if files_created:
             for file in files_created:
                 os.remove(file)
-    return True
+
+
+@click.command()
+@click.option("-k", "--keyword", "keyword", required=True)
+@click.option("-l", "--location", "location", required=False, default="global")
+# @click.option("-l", "--location", "location", required=False, default="global")
+# add verbose flag that outputs details on size, location, and full_path
+# turn `matches` list into `output` list of dicts, appending info dict for each file
+def search(keyword, location):
+    click.echo(f"Searching {location} for {keyword}...")
+
+    if location == "local":
+        files = utils.files_in_media_dir()
+
+    elif location == "s3":
+        # get objects from s3 bucket
+        files = aws.get_bucket_object_keys()
+    elif location == "global":
+        # do both
+        files = utils.files_in_media_dir() + aws.get_bucket_object_keys()
+    else:
+        click.echo("invalid location")
+
+    # click.echo(str(files))
+    matches = []
+    for file in files:
+        if utils.keyword_in_string(keyword, file):
+            matches.append(file)
+
+    if len(matches) >= 1:
+        # print("more than 1 match, be more specific\n")
+        # print("\n".join(matches))
+        click.echo("at least one match found\n")
+        click.echo("\n".join(matches))
+        return True
+    else:
+        click.echo("no matches found\n")
+        return False
 
 
 @click.command()
@@ -68,16 +106,6 @@ def download(filename):
 )
 def delete(filename):
     click.echo(f"{filename} dropped from S3")
-
-
-@click.command()
-@click.option("-w", "--keyword", "keyword", required=True)
-@click.option("-l", "--location", "location", required=False)
-def search(keyword, location):
-    if "location" in locals():
-        click.echo(f"Searching {location} for {keyword}...")
-    else:
-        click.echo(f"Searching local and S3 for {keyword}...")
 
 
 mmgmt.add_command(upload)
