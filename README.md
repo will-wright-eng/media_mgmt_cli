@@ -10,6 +10,7 @@ A simple CLI to manage media files locally and in S3
 This is a summary
 
 ## TODO
+- correct upload command: adjust `.envrc` in media directory to have the correct `bucket` and `object_name`; add `object_name` env var to `media_mgmt_cli` `.envrc` for testing
 - search feature: search includes movies streaming via [tmdb](https://developers.themoviedb.org/3/search/search-movies) free api
 - search feature: include torrents (bot that logs into revolutiontt and runs search, scrape and display results; eg [torrent search api](https://github.com/JimmyLaurent/torrent-search-api) or [this one](https://www.npmjs.com/package/torrent-search-api))
 - uplaod feature: check to see if S3 object key already exists, if so then compare size of each

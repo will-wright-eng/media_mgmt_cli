@@ -20,28 +20,33 @@ def mmgmt():
 @click.command()
 @click.option("-f", "--file-or-dir", "file_or_dir", required=False, default=None)
 def upload(file_or_dir):
-    p = Path(__file__).parent
+    p = Path(".")
     localfiles = os.listdir(p)
     files_created = []
     try:
         if file_or_dir:
             if file_or_dir in localfiles:
+                click.echo("file found, ziping...")
+                # TODO: add check to see if zip file exists
+                # or add flag that tells the control flow to skip the zip_process
                 zip_file = utils.zip_process(file_or_dir)
-                click.echo(f"Uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}")
+                click.echo(f"uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}")
                 files_created.append(zip_file)
                 resp = aws.upload_file(file_name=zip_file)
-                click.echo(f"Success? {resp}")
+                click.echo(f"success? {resp}")
             else:
-                click.echo(f"Invalid file or directory")
+                click.echo(f"invalid file or directory")
                 return False
-        else:
-            click.echo(f"Uploading all Media objects to S3")
+        elif file_or_dir == "all":
+            click.echo(f"uploading all media objects to S3")
             for file_or_dir in localfiles:
                 zip_file = utils.zip_process(file_or_dir)
                 files_created.append(zip_file)
-                click.echo(f"Uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}")
+                click.echo(f"uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}")
                 resp = aws.upload_file(file_name=zip_file)
-                click.echo(f"Success? {resp}")
+                click.echo(f"success? {resp}")
+        else:
+            click.echo("invalid file_or_dir command")
     except Exception as e:
         click.echo(e)
     finally:
@@ -108,7 +113,16 @@ def delete(filename):
     click.echo(f"{filename} dropped from S3")
 
 
+@click.command()
+def ls():
+    p = Path(".")
+    localfiles = os.listdir(p)
+    for file in localfiles:
+        click.echo(file)
+
+
 mmgmt.add_command(upload)
 mmgmt.add_command(download)
 mmgmt.add_command(delete)
 mmgmt.add_command(search)
+mmgmt.add_command(ls)
