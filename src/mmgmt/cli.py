@@ -27,7 +27,7 @@ def upload(file_or_dir):
         if file_or_dir:
             if file_or_dir in localfiles:
                 click.echo("file found, ziping...")
-                # TODO: add check to see if zip file exists
+                # TODO: add check to see if zip file exists <-- this one
                 # or add flag that tells the control flow to skip the zip_process
                 zip_file = utils.zip_process(file_or_dir)
                 click.echo(f"uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}")
@@ -42,7 +42,9 @@ def upload(file_or_dir):
             for file_or_dir in localfiles:
                 zip_file = utils.zip_process(file_or_dir)
                 files_created.append(zip_file)
-                click.echo(f"uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}")
+                click.echo(
+                    f"uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}/{os.getenv('AWS_BUCKET_PATH')}/{zip_file}"
+                )
                 resp = aws.upload_file(file_name=zip_file)
                 click.echo(f"success? {resp}")
         else:
