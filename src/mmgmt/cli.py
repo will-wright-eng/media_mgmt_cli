@@ -12,41 +12,41 @@ from .utils import utils as utils
 aws = AwsStorageMgmt()
 
 
+def upload_file_or_dir(file_or_dir, compression):
+    if compression == "zip":
+        file_created = utils.zip_process(file_or_dir)
+    elif compression == "gzip":
+        file_created = utils.gzip_process(file_or_dir)
+    aws.upload_file(file_name=file_created)
+    return file_created
+
 @click.group()
 def mmgmt():
     pass
 
 
+# TODO: add check to see if zip file exists <-- this one
+# or add flag that tells the control flow to skip the zip_process
+# add clean_string method to zip_process method
+# add filter to localfiles to exclude .DS_Store
 @click.command()
 @click.option("-f", "--file-or-dir", "file_or_dir", required=False, default=None)
 @click.option("-c", "--compression", "compression", required=False, default="gzip")
 def upload(file_or_dir, compression):
     p = Path(".")
-    localfiles = os.listdir(p)
+    localfiles = os.listdir(p) 
     files_created = []
     try:
         if file_or_dir:
-            # extract this code segment into function -- DRY
             if file_or_dir == "all":
                 click.echo(f"uploading all media objects to S3")
-                for file_or_dir in localfiles:
-                    if compression == "zip":
-                        file_created = utils.zip_process(file_or_dir)
-                    elif compression == "gzip":
-                        file_created = utils.gzip_process(file_or_dir)
-                    files_created.append(file_created)
-                    resp = aws.upload_file(file_name=file_created)
+                for _file_or_dir in localfiles:
+                    click.echo(f"{_file_or_dir}, compressing...")
+                    files_created.append(upload_file_or_dir(_file_or_dir, compression))
             elif file_or_dir in localfiles:
                 click.echo("file found, compressing...")
-                # TODO: add check to see if zip file exists <-- this one
-                # or add flag that tells the control flow to skip the zip_process
-                # add clean_string method to zip_process method
-                if compression == "zip":
-                    file_created = utils.zip_process(file_or_dir)
-                elif compression == "gzip":
-                    file_created = utils.gzip_process(file_or_dir)
-                files_created.append(file_created)
-                resp = aws.upload_file(file_name=file_created)
+
+                files_created.append(upload_file_or_dir(file_or_dir, compression))
             else:
                 click.echo(f"invalid file or directory")
                 return False
@@ -125,7 +125,6 @@ def ls():
     p = Path(".")
     localfiles = os.listdir(p)
     for file in localfiles:
-        # click.echo(file)
         utils.click_echo(file)
 
 
