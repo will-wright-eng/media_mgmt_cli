@@ -14,7 +14,8 @@ Author: William Wright
 """
 
 import os
-import logging
+
+# import logging
 
 import boto3
 from botocore.exceptions import ClientError
@@ -36,6 +37,11 @@ class AwsStorageMgmt:
         :param object_name: S3 object name. If not specified then file_name is used
         :return: True if file was uploaded, else False
         """
+        from click import echo
+
+        echo(
+            f"uploading: {file_name} \nto S3 bucket: {os.getenv('AWS_BUCKET')}/{os.getenv('AWS_BUCKET_PATH')}/{file_name}"
+        )
         if not object_name:
             object_name = os.path.join(self.object_name, file_name)
         else:
@@ -46,8 +52,11 @@ class AwsStorageMgmt:
             with open(file_name, "rb") as data:
                 self.s3_client.upload_fileobj(data, self.bucket, object_name)
         except ClientError as e:
-            logging.error(e)
+            # logging.error(e)
+            echo(e)
+            echo("success? False\n")
             return False
+        echo("success? True\n")
         return True
 
     def download_file(self, file_name, object_name=None):
@@ -69,8 +78,11 @@ class AwsStorageMgmt:
             with open(file_name, "wb") as data:
                 self.s3_client.download_fileobj(self.bucket, object_name, data)
         except ClientError as e:
-            logging.error(e)
+            # logging.error(e)
+            echo(e)
+            echo("success? False")
             return False
+        echo("success? True")
         return True
 
     def restore_from_glacier(self, file_name, object_name=None):
