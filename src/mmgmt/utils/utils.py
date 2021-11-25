@@ -1,4 +1,5 @@
 import os
+import gzip
 import shutil
 from pathlib import Path
 from zipfile import ZipFile
@@ -15,7 +16,28 @@ def zip_single_file(filename: str) -> str:
     return zip_file
 
 
+def gzip_single_file(filename: str) -> str:
+    pathname = str(Path.cwd())
+    zip_file = f"{filename}.gz"
+    with open(os.path.join(pathname, filename), 'rb') as f_in:
+        with gzip.open(os.path.join(pathname, zip_file), 'wb') as f_out:
+            shutil.copyfileobj(f_in, f_out)
+    return zip_file
+
+
 def zip_process(file_or_dir: str) -> str:
+    p = Path.cwd()
+    try:
+        # if dir
+        dir_name = str(p / file_or_dir)
+        zip_path = shutil.make_archive(dir_name, "zip", dir_name)
+        return zip_path.split("/")[-1]
+    except NotADirectoryError as e:
+        # if file
+        return zip_single_file(file_or_dir)
+
+
+def gzip_process(file_or_dir: str) -> str:
     p = Path.cwd()
     try:
         # if dir

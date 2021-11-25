@@ -25,12 +25,14 @@ def upload(file_or_dir):
     files_created = []
     try:
         if file_or_dir:
+            # extract this code segment into function -- DRY
             if file_or_dir in localfiles:
                 click.echo("file found, ziping...")
                 # TODO: add check to see if zip file exists <-- this one
                 # or add flag that tells the control flow to skip the zip_process
+                # add clean_string method to zip_process method
                 zip_file = utils.zip_process(file_or_dir)
-                click.echo(f"uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}")
+                click.echo(f"uploading {zip_file} to S3 bucket, {os.getenv('AWS_BUCKET')}/{os.getenv('AWS_BUCKET_PATH')}/{zip_file}")
                 files_created.append(zip_file)
                 resp = aws.upload_file(file_name=zip_file)
                 click.echo(f"success? {resp}")
@@ -52,7 +54,7 @@ def upload(file_or_dir):
     except Exception as e:
         click.echo(e)
     finally:
-        # remove all zip files from dir
+        # remove all created files from dir
         if files_created:
             for file in files_created:
                 os.remove(file)
@@ -100,6 +102,7 @@ def search(keyword, location):
 @click.option("-f", "--filename", "filename", required=True)
 def download(filename):
     click.echo(f"Downloading {filename} from S3...")
+    click.echo("command not yet complete")
 
 
 @click.command()
@@ -113,6 +116,7 @@ def download(filename):
 )
 def delete(filename):
     click.echo(f"{filename} dropped from S3")
+    click.echo("command not yet complete")
 
 
 @click.command()

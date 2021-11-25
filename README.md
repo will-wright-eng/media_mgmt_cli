@@ -16,9 +16,17 @@ This is a summary
 - uplaod feature: check to see if S3 object key already exists, if so then compare size of each
 - upload feature: checksum or hash to confirm file upload fully completed
 
+- store torrent trackers
+
+### Database
 - metadata & caching: 
 	- store results from each search in db -- add historical search feature
 	- write run_id and meta information to mysql database as an alternative to search **OR** provision a postgres database on AWS and use postio to access --> write simple sqlalchemy class to interact with db
+- transactions table(s)
+	- `upload` | file_name | source | target | checksum_source | checksum_upload_verified (bool)| upload_date | file_type | file_count | dir_levels
+	- `download` | source | file_name | download_date
+	- `search`
+	- `torrents` | tracker | download_date | 
 
 ## Notes
 ### Workflows
