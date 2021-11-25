@@ -1,5 +1,7 @@
+**/test_file.txt
 test.*
 Untitled.*
+**/Untitled.py
 config.yaml
 /s3_cli/*
 .DS_Store
@@ -108,6 +110,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
+.envrc
 .env
 .venv
 env/

@@ -1,10 +1,10 @@
-boto3==1.17.90
-botocore==1.20.90
-click==8.0.1
+boto3==1.18.58
+botocore==1.21.58
+certifi==2021.5.30
+click==8.0.2
 jmespath==0.10.0
--e git+git@github.com:william-cass-wright/media_mgmt_cli.git@3884d707d7ad31b6e1c4eacae5c87aa24abce18a#egg=media_mgmt
-python-dateutil==2.8.1
+python-dateutil==2.8.2
 PyYAML==5.4.1
-s3transfer==0.4.2
+s3transfer==0.5.0
 six==1.16.0
-urllib3==1.26.5
+urllib3==1.26.7
