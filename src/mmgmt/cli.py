@@ -20,6 +20,7 @@ def upload_file_or_dir(file_or_dir, compression):
     aws.upload_file(file_name=file_created)
     return file_created
 
+
 @click.group()
 def mmgmt():
     pass
@@ -45,7 +46,6 @@ def upload(file_or_dir, compression):
                     files_created.append(upload_file_or_dir(_file_or_dir, compression))
             elif file_or_dir in localfiles:
                 click.echo("file found, compressing...")
-
                 files_created.append(upload_file_or_dir(file_or_dir, compression))
             else:
                 click.echo(f"invalid file or directory")
@@ -103,7 +103,8 @@ def search(keyword, location):
 @click.option("-f", "--filename", "filename", required=True)
 def download(filename):
     click.echo(f"Downloading {filename} from S3...")
-    click.echo("command not yet complete")
+    # click.echo("command not yet complete")
+    aws.download_file(file_name=filename)
 
 
 @click.command()
