@@ -1,23 +1,6 @@
-"""
-# functions
-- upload_file
-- download_file
-    - download_from_standard
-    - download_from_glacier
-        - restore_from_glacier
-        - check_obj_status
-- search_keyword_global
-    - search_keyword_s3
-    - search_keyword_local
-
-Author: William Wright
-"""
-
 import os
-# import logging
-
-from click import echo
 import boto3
+from click import echo
 from botocore.exceptions import ClientError
 
 
