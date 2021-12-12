@@ -31,7 +31,7 @@ Commands:
 export AWS_BUCKET=<'insert media bucket'>
 export AWS_MEDIA_BUCKET=<'insert media bucket'>
 export AWS_BUCKET_PATH=<'insert file prefix'>
-export LOCAL_MEDIA_DIR=/path/to/media_dir/
+export LOCAL_MEDIA_DIR=<'insert /path/to/media_dir/'>
 export EDITOR=vi
 ```
 
