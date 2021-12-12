@@ -1,23 +1,6 @@
-"""
-# functions
-- upload_file
-- download_file
-    - download_from_standard
-    - download_from_glacier
-        - restore_from_glacier
-        - check_obj_status
-- search_keyword_global
-    - search_keyword_s3
-    - search_keyword_local
-
-Author: William Wright
-"""
-
 import os
-
-# import logging
-
 import boto3
+from click import echo
 from botocore.exceptions import ClientError
 
 
@@ -37,8 +20,6 @@ class AwsStorageMgmt:
         :param object_name: S3 object name. If not specified then file_name is used
         :return: True if file was uploaded, else False
         """
-        from click import echo
-
         echo(
             f"uploading: {file_name} \nto S3 bucket: {os.getenv('AWS_BUCKET')}/{os.getenv('AWS_BUCKET_PATH')}/{file_name}"
         )
@@ -70,6 +51,7 @@ class AwsStorageMgmt:
         """
         if not object_name:
             object_name = file_name
+            file_name = file_name.split('/')[-1]
         else:
             object_name = os.path.join(object_name, file_name)
 
@@ -78,14 +60,16 @@ class AwsStorageMgmt:
             with open(file_name, "wb") as data:
                 self.s3_client.download_fileobj(self.bucket, object_name, data)
         except ClientError as e:
-            # logging.error(e)
             echo(e)
             echo("success? False")
+            if e.response['Error']['Code'] == 'InvalidObjectState':
+                self.download_from_glacier(file_name=file_name, object_name=object_name)
+                return True
             return False
         echo("success? True")
         return True
 
-    def restore_from_glacier(self, file_name, object_name=None):
+    def restore_from_glacier(self, file_name: str, object_name: str = None):
         """Restore object from Glacier tier for download
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.restore_object
 
@@ -126,36 +110,21 @@ class AwsStorageMgmt:
         )
         return response
 
-    def download_from_glacier(self, file_name, object_name=None):
+    def download_from_glacier(self, file_name: str, object_name: str):
         """download_from_glacier docstring"""
         import time
 
-        self.restore_from_glacier(self.s3_client, file_name, self.bucket, object_name=None)
+        echo(f"restoring object from glacier: {file_name}")
+        self.restore_from_glacier(file_name=file_name, object_name=object_name)
         resored = False
         while resored == False:
             time.sleep(30)
-            response = check_obj_status()
+            response = self.check_obj_status()
             if response == "":
                 restored = True
+            echo("checking...")
             print("checking...")
 
-        response = self.download_file(file_name=file_name)
+        echo("downloading restored file")
+        response = self.download_file(file_name=file_name, object_name=object_name)
         return response
-
-    # def search_keyword_s3(self):
-    #     """search for keywork in S3 media files"""
-    #     return
-
-    # def search_keyword_local(self):
-    #     """search for keyword among local media files"""
-    #     return
-
-    # def search_keyword_global(self):
-    #     """search_keyword docstring
-
-    #     :param file_name: download to this file name
-    #     :param bucket: Bucket to download from
-    #     :param object_name: S3 object name. If not specified then file_name is used
-    #     :return: True if file was uploaded, else False
-    #     """
-    #     return
