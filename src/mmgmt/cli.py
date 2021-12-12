@@ -61,18 +61,9 @@ def upload(file_or_dir, compression):
                 os.remove(file)
 
 
-@click.command()
-@click.option("-k", "--keyword", "keyword", required=True)
-@click.option("-l", "--location", "location", required=False, default="global")
-# @click.option("-l", "--location", "location", required=False, default="global")
-# add verbose flag that outputs details on size, location, and full_path
-# turn `matches` list into `output` list of dicts, appending info dict for each file
-def search(keyword, location):
-    click.echo(f"Searching {location} for {keyword}...")
-
+def get_files(location:str):
     if location == "local":
         files = utils.files_in_media_dir()
-
     elif location == "s3":
         # get objects from s3 bucket
         files = aws.get_bucket_object_keys()
@@ -81,8 +72,20 @@ def search(keyword, location):
         files = utils.files_in_media_dir() + aws.get_bucket_object_keys()
     else:
         click.echo("invalid location")
+        return False
+    return files
 
-    # click.echo(str(files))
+
+@click.command()
+@click.option("-k", "--keyword", "keyword", required=True)
+@click.option("-l", "--location", "location", required=False, default="global")
+# @click.option("-l", "--location", "location", required=False, default="global")
+# add verbose flag that outputs details on size, location, and full_path
+# turn `matches` list into `output` list of dicts, appending info dict for each file
+def search(keyword, location):
+    files = get_files(location=location)
+
+    click.echo(f"Searching {location} for {keyword}...")
     matches = []
     for file in files:
         if utils.keyword_in_string(keyword, file):
@@ -122,10 +125,15 @@ def delete(filename):
 
 
 @click.command()
-def ls():
-    p = Path(".")
-    localfiles = os.listdir(p)
-    for file in localfiles:
+@click.option("-l", "--location", "location", required=False, default="here")
+def ls(location):
+    if location in ('local','s3','global'):
+        files = get_files(location=location)
+    else:        
+        p = Path(".")
+        files = os.listdir(p)
+        
+    for file in files:
         utils.click_echo(file)
 
 
