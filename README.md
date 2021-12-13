@@ -39,3 +39,4 @@ export EDITOR=vi
 - [pip install -e .](https://stackoverflow.com/questions/35064426/when-would-the-e-editable-option-be-useful-with-pip-install)
 - install miniconda: [link](https://docs.conda.io/en/latest/miniconda.html)
 - [direnv](https://direnv.net/) for `.envrc` env vars
+- original project: [media_backup](https://github.com/william-cass-wright/media_backup)
