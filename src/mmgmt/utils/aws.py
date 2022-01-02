@@ -119,7 +119,7 @@ class AwsStorageMgmt:
         resored = False
         while resored == False:
             time.sleep(30)
-            response = self.check_obj_status()
+            response = self.check_obj_status(file_name)
             if response == "":
                 restored = True
             echo("checking...")
