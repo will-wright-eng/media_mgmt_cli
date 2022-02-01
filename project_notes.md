@@ -10,15 +10,16 @@ A simple CLI to manage media files locally and in S3
 This is a summary
 
 ## TODO
+### bugs
 - correct upload command: adjust `.envrc` in media directory to have the correct `bucket` and `object_name`; add `object_name` env var to `media_mgmt_cli` `.envrc` for testing
-- search feature: search includes movies streaming via [tmdb](https://developers.themoviedb.org/3/search/search-movies) free api
-- search feature: include torrents (bot that logs into revolutiontt and runs search, scrape and display results; eg [torrent search api](https://github.com/JimmyLaurent/torrent-search-api) or [this one](https://www.npmjs.com/package/torrent-search-api))
-- uplaod feature: check to see if S3 object key already exists, if so then compare size of each
-- upload feature: checksum or hash to confirm file upload fully completed
-
-- store torrent trackers
-
-### Database
+### search features
+- search includes movies streaming via [tmdb](https://developers.themoviedb.org/3/search/search-movies) or [movie of the night](https://www.movieofthenight.com/about/api) free api service
+- include torrents (bot that logs into revolutiontt and runs search, scrape and display results; eg [torrent search api](https://github.com/JimmyLaurent/torrent-search-api) or [this one](https://www.npmjs.com/package/torrent-search-api))
+### upload features
+- check to see if S3 object key already exists, if so then compare size of each
+- checksum or hash to confirm file upload fully completed
+### database/storage
+- symetrically encrypt file name with farnet key when storing on cloud (who has access?) ([renaming S3 objects](https://stackoverflow.com/questions/21184720/how-to-rename-files-and-folder-in-amazon-s3))
 - metadata & caching: 
 	- store results from each search in db -- add historical search feature
 	- write run_id and meta information to mysql database as an alternative to search **OR** provision a postgres database on AWS and use postio to access --> write simple sqlalchemy class to interact with db
@@ -27,6 +28,7 @@ This is a summary
 	- `download` | source | file_name | download_date
 	- `search`
 	- `torrents` | tracker | download_date | 
+- store torrent trackers (also, how the fuck do they work?)
 
 ## Notes
 ### Workflows

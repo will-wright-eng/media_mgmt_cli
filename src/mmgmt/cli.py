@@ -1,6 +1,7 @@
 """mmgmt cli docstring"""
 
 import os
+import json
 from pathlib import Path
 
 import click
@@ -29,7 +30,7 @@ def mmgmt():
 # TODO: add check to see if zip file exists <-- this one
 # or add flag that tells the control flow to skip the zip_process
 # add clean_string method to zip_process method
-# add filter to localfiles to exclude .DS_Store
+# add filter to localfiles to exclude .DS_Store (all systems files)
 @click.command()
 @click.option("-f", "--file-or-dir", "file_or_dir", required=False, default=None)
 @click.option("-c", "--compression", "compression", required=False, default="gzip")
@@ -92,8 +93,6 @@ def search(keyword, location):
             matches.append(file)
 
     if len(matches) >= 1:
-        # print("more than 1 match, be more specific\n")
-        # print("\n".join(matches))
         click.echo("at least one match found\n")
         click.echo("\n".join(matches))
         return True
@@ -106,8 +105,14 @@ def search(keyword, location):
 @click.option("-f", "--filename", "filename", required=True)
 def download(filename):
     click.echo(f"Downloading {filename} from S3...")
-    # click.echo("command not yet complete")
     aws.download_file(file_name=filename)
+
+
+@click.command()
+@click.option("-f", "--filename", "filename", required=True)
+def get_status(filename):
+    aws.get_obj_head(object_name=filename)
+    click.echo(json.dumps(aws.obj_head, indent=4, sort_keys=True, default=str))
 
 
 @click.command()
@@ -121,7 +126,7 @@ def download(filename):
 )
 def delete(filename):
     click.echo(f"{filename} dropped from S3")
-    click.echo("command not yet complete")
+    click.echo("jk, command not yet complete")
 
 
 @click.command()
@@ -142,3 +147,4 @@ mmgmt.add_command(download)
 mmgmt.add_command(delete)
 mmgmt.add_command(search)
 mmgmt.add_command(ls)
+mmgmt.add_command(get_status)
