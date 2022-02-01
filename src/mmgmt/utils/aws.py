@@ -1,4 +1,6 @@
 import os
+from time import sleep
+
 import boto3
 from click import echo
 from botocore.exceptions import ClientError
@@ -69,33 +71,20 @@ class AwsStorageMgmt:
         echo("success? True")
         return True
 
-    def restore_from_glacier(self, file_name: str, object_name: str = None):
-        """Restore object from Glacier tier for download
-        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.restore_object
 
-        :param file_name: download to this file name
-        :param bucket: Bucket to download from
-        :param object_name: S3 object name. If not specified then file_name is used
-        :return: True if file was uploaded, else False
-        """
-        response = self.s3_client.restore_object(
-            Bucket=self.bucket,
-            Key=object_name,
-            RestoreRequest={
-                "Days": 10,
-                "GlacierJobParameters": {
-                    "Tier": "Expedited",
-                },
-            },
-        )
-        return response
 
     def get_bucket_object_keys(self):
         my_bucket = self.s3_resour.Bucket(os.getenv("AWS_MEDIA_BUCKET"))
-        # my_bucket = s3_resour.Bucket('media-backup-files')
         return [obj.key for obj in my_bucket.objects.all()]
 
-    def check_obj_status(self, file_name, object_name=None):
+    def get_obj_head(self, object_name: str):
+        response = self.s3_client.head_object(
+            Bucket=self.bucket,
+            Key=object_name,
+        )
+        self.obj_head = response
+
+    def get_obj_restore_status(self, file_name):
         """check_obj_status docstring
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object
 
@@ -104,27 +93,74 @@ class AwsStorageMgmt:
         :param object_name: S3 object name. If not specified then file_name is used
         :return: True if file was uploaded, else False
         """
-        response = self.s3_client.head_object(
+        self.get_obj_head(file_name)
+        try:
+            resp_string = response['Restore']
+            echo(resp_string)
+            if ('ongoing-request' in resp_string) and ('true' in resp_string):
+                status = 'incomplete'
+            elif ('ongoing-request' in resp_string) and ('false' in resp_string):
+                status = 'complete'
+            else:
+                status = 'unknown'
+        except Exception as e:
+            status = str(e)
+        echo(status)
+        return status
+
+    def restore_from_glacier(self, object_name: str, restore_tier: str):
+        """Restore object from Glacier tier for download
+        https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.restore_object
+
+        :param bucket: Bucket to download from
+        :param object_name: S3 object name
+        :return: 
+        """
+        response = self.s3_client.restore_object(
             Bucket=self.bucket,
-            Key=file_name,
+            Key=object_name,
+            RestoreRequest={
+                "Days": 10,
+                "GlacierJobParameters": {
+                    "Tier": restore_tier,
+                },
+            },
         )
         return response
 
     def download_from_glacier(self, file_name: str, object_name: str):
         """download_from_glacier docstring"""
-        import time
 
-        echo(f"restoring object from glacier: {file_name}")
-        self.restore_from_glacier(file_name=file_name, object_name=object_name)
-        resored = False
-        while resored == False:
-            time.sleep(30)
-            response = self.check_obj_status()
-            if response == "":
-                restored = True
-            echo("checking...")
-            print("checking...")
+        self.get_obj_head(object_name)
+        try:
+            tier = self.obj_head['StorageClass']
+            if tier == 'DEEP_ARCHIVE':
+                restore_tier = "Standard"
+            elif tier == "GLACIER":
+                restore_tier = "Expedited"
+        except KeyError as e:
+            echo(f'KeyError: {str(e)}, object not in glacier storage -- check control flow')
+            return
 
-        echo("downloading restored file")
-        response = self.download_file(file_name=file_name, object_name=object_name)
-        return response
+        echo(f"restoring object from {tier}: {file_name}")
+        self.restore_from_glacier(object_name=object_name, restore_tier=restore_tier)
+        if tier == "GLACIER":
+            restored = False
+            while restored == False:
+                sleep(30)
+                echo("checking...")
+                status = self.get_obj_restore_status(file_name)
+                if status == "incomplete":
+                    pass
+                elif status == "complete":
+                    echo("restored = True")
+                    restored = True
+                else:
+                    echo(f"status: {status}, exiting...")
+                    return
+
+            echo("downloading restored file")
+            return self.download_file(file_name=file_name, object_name=object_name)
+        else:
+            echo(f"object in {tier}, object will be restored in 12-24 hours")
+            return
