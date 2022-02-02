@@ -7,6 +7,9 @@ from zipfile import ZipFile
 from typing import List
 
 import yaml
+from click import echo
+
+from .aws import aws
 
 
 def zip_single_file(filename: str) -> str:
@@ -84,8 +87,55 @@ def files_in_media_dir() -> List[str]:
 
 
 def click_echo(string):
-    from click import echo
     echo(string)
+
+
+def upload_file_or_dir(file_or_dir, compression):
+    if compression == "zip":
+        file_created = zip_process(file_or_dir)
+    elif compression == "gzip":
+        file_created = gzip_process(file_or_dir)
+    aws.upload_file(file_name=file_created)
+    return file_created
+
+
+def get_files(location: str):
+    if location == "local":
+        files = files_in_media_dir()
+    elif location == "s3":
+        # get objects from s3 bucket
+        files = aws.get_bucket_object_keys()
+    elif location == "global":
+        # do both
+        files = files_in_media_dir() + aws.get_bucket_object_keys()
+    else:
+        echo("invalid location")
+        return False
+    return files
+
+
+def get_storage_tier(file_list: List[str]):
+    check_status = str(input("display storage tier? [Y/n] "))
+    if check_status in ("Y", "n"):
+        if check_status == "Y":
+            echo()
+            for file_name in file_list:
+                try:
+                    resp = aws.get_obj_head(file_name)
+                    try:
+                        restored = resp["Restore"]
+                        if restored:
+                            restored = True
+                    except KeyError as e:
+                        restored = False
+                    try:
+                        echo(f"{resp['StorageClass']} \t {restored} \t {file_name}")
+                    except KeyError as e:
+                        echo(f"STANDARD \t {restored} \t {file_name}")
+                except Exception as e:
+                    # except ClientError as e:
+                    echo(f"skipping: {file_name},\t {str(e)}")
+                    # print(f"ClientError while searching for {file_name}: {str(e)}")
 
 
 # def create_directories(folders, logger=None):

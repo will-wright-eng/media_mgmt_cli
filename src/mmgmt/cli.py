@@ -3,23 +3,13 @@
 import os
 import json
 from pathlib import Path
+from typing import List
 
 import click
 import boto3
 
-from .utils.aws import AwsStorageMgmt
+from .utils.aws import aws
 from .utils import utils as utils
-
-aws = AwsStorageMgmt()
-
-
-def upload_file_or_dir(file_or_dir, compression):
-    if compression == "zip":
-        file_created = utils.zip_process(file_or_dir)
-    elif compression == "gzip":
-        file_created = utils.gzip_process(file_or_dir)
-    aws.upload_file(file_name=file_created)
-    return file_created
 
 
 @click.group()
@@ -36,7 +26,7 @@ def mmgmt():
 @click.option("-c", "--compression", "compression", required=False, default="gzip")
 def upload(file_or_dir, compression):
     p = Path(".")
-    localfiles = os.listdir(p) 
+    localfiles = os.listdir(p)
     files_created = []
     try:
         if file_or_dir:
@@ -44,10 +34,10 @@ def upload(file_or_dir, compression):
                 click.echo(f"uploading all media objects to S3")
                 for _file_or_dir in localfiles:
                     click.echo(f"{_file_or_dir}, compressing...")
-                    files_created.append(upload_file_or_dir(_file_or_dir, compression))
+                    files_created.append(utils.upload_file_or_dir(_file_or_dir, compression))
             elif file_or_dir in localfiles:
                 click.echo("file found, compressing...")
-                files_created.append(upload_file_or_dir(file_or_dir, compression))
+                files_created.append(utils.upload_file_or_dir(file_or_dir, compression))
             else:
                 click.echo(f"invalid file or directory")
                 return False
@@ -62,21 +52,6 @@ def upload(file_or_dir, compression):
                 os.remove(file)
 
 
-def get_files(location:str):
-    if location == "local":
-        files = utils.files_in_media_dir()
-    elif location == "s3":
-        # get objects from s3 bucket
-        files = aws.get_bucket_object_keys()
-    elif location == "global":
-        # do both
-        files = utils.files_in_media_dir() + aws.get_bucket_object_keys()
-    else:
-        click.echo("invalid location")
-        return False
-    return files
-
-
 @click.command()
 @click.option("-k", "--keyword", "keyword", required=True)
 @click.option("-l", "--location", "location", required=False, default="global")
@@ -84,7 +59,7 @@ def get_files(location:str):
 # add verbose flag that outputs details on size, location, and full_path
 # turn `matches` list into `output` list of dicts, appending info dict for each file
 def search(keyword, location):
-    files = get_files(location=location)
+    files = utils.get_files(location=location)
 
     click.echo(f"Searching {location} for {keyword}...")
     matches = []
@@ -95,6 +70,7 @@ def search(keyword, location):
     if len(matches) >= 1:
         click.echo("at least one match found\n")
         click.echo("\n".join(matches))
+        utils.get_storage_tier(matches)
         return True
     else:
         click.echo("no matches found\n")
@@ -132,14 +108,14 @@ def delete(filename):
 @click.command()
 @click.option("-l", "--location", "location", required=False, default="here")
 def ls(location):
-    if location in ('local','s3','global'):
-        files = get_files(location=location)
-    else:        
+    if location in ("local", "s3", "global"):
+        files = utils.get_files(location=location)
+    else:
         p = Path(".")
         files = os.listdir(p)
-        
+
     for file in files:
-        utils.click_echo(file)
+        click.echo(file)
 
 
 mmgmt.add_command(upload)

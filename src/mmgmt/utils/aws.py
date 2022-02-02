@@ -53,7 +53,7 @@ class AwsStorageMgmt:
         """
         if not object_name:
             object_name = file_name
-            file_name = file_name.split('/')[-1]
+            file_name = file_name.split("/")[-1]
         else:
             object_name = os.path.join(object_name, file_name)
 
@@ -64,14 +64,12 @@ class AwsStorageMgmt:
         except ClientError as e:
             echo(e)
             echo("success? False")
-            if e.response['Error']['Code'] == 'InvalidObjectState':
+            if e.response["Error"]["Code"] == "InvalidObjectState":
                 self.download_from_glacier(file_name=file_name, object_name=object_name)
                 return True
             return False
         echo("success? True")
         return True
-
-
 
     def get_bucket_object_keys(self):
         my_bucket = self.s3_resour.Bucket(os.getenv("AWS_MEDIA_BUCKET"))
@@ -83,6 +81,7 @@ class AwsStorageMgmt:
             Key=object_name,
         )
         self.obj_head = response
+        return response
 
     def get_obj_restore_status(self, file_name):
         """check_obj_status docstring
@@ -95,14 +94,14 @@ class AwsStorageMgmt:
         """
         self.get_obj_head(file_name)
         try:
-            resp_string = response['Restore']
+            resp_string = response["Restore"]
             echo(resp_string)
-            if ('ongoing-request' in resp_string) and ('true' in resp_string):
-                status = 'incomplete'
-            elif ('ongoing-request' in resp_string) and ('false' in resp_string):
-                status = 'complete'
+            if ("ongoing-request" in resp_string) and ("true" in resp_string):
+                status = "incomplete"
+            elif ("ongoing-request" in resp_string) and ("false" in resp_string):
+                status = "complete"
             else:
-                status = 'unknown'
+                status = "unknown"
         except Exception as e:
             status = str(e)
         echo(status)
@@ -114,7 +113,7 @@ class AwsStorageMgmt:
 
         :param bucket: Bucket to download from
         :param object_name: S3 object name
-        :return: 
+        :return:
         """
         response = self.s3_client.restore_object(
             Bucket=self.bucket,
@@ -133,13 +132,13 @@ class AwsStorageMgmt:
 
         self.get_obj_head(object_name)
         try:
-            tier = self.obj_head['StorageClass']
-            if tier == 'DEEP_ARCHIVE':
+            tier = self.obj_head["StorageClass"]
+            if tier == "DEEP_ARCHIVE":
                 restore_tier = "Standard"
             elif tier == "GLACIER":
                 restore_tier = "Expedited"
         except KeyError as e:
-            echo(f'KeyError: {str(e)}, object not in glacier storage -- check control flow')
+            echo(f"KeyError: {str(e)}, object not in glacier storage -- check control flow")
             return
 
         echo(f"restoring object from {tier}: {file_name}")
@@ -164,3 +163,6 @@ class AwsStorageMgmt:
         else:
             echo(f"object in {tier}, object will be restored in 12-24 hours")
             return
+
+
+aws = AwsStorageMgmt()
