@@ -81,7 +81,7 @@ def search(keyword, location):
 @click.option("-f", "--filename", "filename", required=True)
 def download(filename):
     click.echo(f"Downloading {filename} from S3...")
-    aws.download_file(file_name=filename)
+    aws.download_file(object_name=filename)
 
 
 @click.command()
