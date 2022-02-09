@@ -29,6 +29,9 @@ This is a summary
 	- `search`
 	- `torrents` | tracker | download_date | 
 - store torrent trackers (also, how the fuck do they work?)
+### setup media computer
+- search and download files accross machines on local network
+- [ssh into machine](https://superuser.com/questions/413718/how-to-connect-2-macs-via-ssh-on-a-home-network), list files in media directory, zip file, then [scp to local machine](https://stackoverflow.com/questions/68335/how-to-copy-a-file-to-a-remote-server-in-python-using-scp-or-ssh)
 
 ## Notes
 ### Workflows

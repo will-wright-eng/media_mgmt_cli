@@ -12,7 +12,7 @@ class AwsStorageMgmt:
         self.s3_resour = boto3.resource("s3")
         self.s3_client = boto3.client("s3")
         self.bucket = os.getenv("AWS_BUCKET")
-        self.object_name = os.getenv("AWS_BUCKET_PATH")
+        self.object_prefix = os.getenv("AWS_BUCKET_PATH")
 
     def upload_file(self, file_name, object_name=None):
         """Upload a file to an S3 bucket
@@ -27,7 +27,7 @@ class AwsStorageMgmt:
             f"uploading: {file_name} \nto S3 bucket: {os.getenv('AWS_BUCKET')}/{os.getenv('AWS_BUCKET_PATH')}/{file_name}"
         )
         if not object_name:
-            object_name = os.path.join(self.object_name, file_name)
+            object_name = os.path.join(self.object_prefix, file_name)
         else:
             object_name = os.path.join(object_name, file_name)
 
