@@ -12,12 +12,15 @@ This is a summary
 ## TODO
 ### bugs
 - correct upload command: adjust `.envrc` in media directory to have the correct `bucket` and `object_name`; add `object_name` env var to `media_mgmt_cli` `.envrc` for testing
+- remove parenthesis from file names -- causes error when calling object name in zsh, treating the parens as an array
 ### search features
 - search includes movies streaming via [tmdb](https://developers.themoviedb.org/3/search/search-movies) or [movie of the night](https://www.movieofthenight.com/about/api) free api service
 - include torrents (bot that logs into revolutiontt and runs search, scrape and display results; eg [torrent search api](https://github.com/JimmyLaurent/torrent-search-api) or [this one](https://www.npmjs.com/package/torrent-search-api))
 ### upload features
 - check to see if S3 object key already exists, if so then compare size of each
 - checksum or hash to confirm file upload fully completed
+### download features
+- copy/paste from a search is arduious --> add feature, input("download from search list? [Y/n] "), assign numbers to each result in list, input("choose object to download (by number):"), wrapping object name in quotes
 ### database/storage
 - symetrically encrypt file name with farnet key when storing on cloud (who has access?) ([renaming S3 objects](https://stackoverflow.com/questions/21184720/how-to-rename-files-and-folder-in-amazon-s3))
 - metadata & caching: 
@@ -29,6 +32,7 @@ This is a summary
 	- `search`
 	- `torrents` | tracker | download_date | 
 - store torrent trackers (also, how the fuck do they work?)
+- move all S3 media objects to Glacier flexible recovery storage
 ### setup media computer
 - search and download files accross machines on local network
 - [ssh into machine](https://superuser.com/questions/413718/how-to-connect-2-macs-via-ssh-on-a-home-network), list files in media directory, zip file, then [scp to local machine](https://stackoverflow.com/questions/68335/how-to-copy-a-file-to-a-remote-server-in-python-using-scp-or-ssh)
