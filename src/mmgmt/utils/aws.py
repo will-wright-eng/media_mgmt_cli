@@ -1,4 +1,5 @@
 import os
+import json
 from time import sleep
 
 import boto3
@@ -11,7 +12,7 @@ class AwsStorageMgmt:
         self.s3_resour = boto3.resource("s3")
         self.s3_client = boto3.client("s3")
         self.bucket = os.getenv("AWS_BUCKET")
-        self.object_name = os.getenv("AWS_BUCKET_PATH")
+        self.object_prefix = os.getenv("AWS_BUCKET_PATH")
 
     def upload_file(self, file_name, object_name=None):
         """Upload a file to an S3 bucket
@@ -26,7 +27,7 @@ class AwsStorageMgmt:
             f"uploading: {file_name} \nto S3 bucket: {os.getenv('AWS_BUCKET')}/{os.getenv('AWS_BUCKET_PATH')}/{file_name}"
         )
         if not object_name:
-            object_name = os.path.join(self.object_name, file_name)
+            object_name = os.path.join(self.object_prefix, file_name)
         else:
             object_name = os.path.join(object_name, file_name)
 
@@ -42,7 +43,7 @@ class AwsStorageMgmt:
         echo("success? True\n")
         return True
 
-    def download_file(self, file_name, object_name=None):
+    def download_file(self, object_name:str):
         """Download file from S3 to local
         https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-example-download-file.html
 
@@ -51,27 +52,24 @@ class AwsStorageMgmt:
         :param object_name: S3 object name. If not specified then file_name is used
         :return: True if file was uploaded, else False
         """
-        if not object_name:
-            object_name = file_name
-            file_name = file_name.split('/')[-1]
-        else:
-            object_name = os.path.join(object_name, file_name)
+        file_name = object_name.split("/")[-1]
 
         try:
-            # response = self.s3_client.download_file(self.bucket, object_name, file_name)
             with open(file_name, "wb") as data:
                 self.s3_client.download_fileobj(self.bucket, object_name, data)
         except ClientError as e:
-            echo(e)
             echo("success? False")
-            if e.response['Error']['Code'] == 'InvalidObjectState':
-                self.download_from_glacier(file_name=file_name, object_name=object_name)
+            os.remove(file_name)
+            status = self.get_obj_restore_status(object_name)
+            if status =="incomplete":
+                echo("restore in process")
+                echo(json.dumps(aws.obj_head, indent=4, sort_keys=True, default=str))
+            elif e.response["Error"]["Code"] == "InvalidObjectState":
+                self.download_from_glacier(object_name=object_name)
                 return True
             return False
         echo("success? True")
         return True
-
-
 
     def get_bucket_object_keys(self):
         my_bucket = self.s3_resour.Bucket(os.getenv("AWS_MEDIA_BUCKET"))
@@ -83,8 +81,9 @@ class AwsStorageMgmt:
             Key=object_name,
         )
         self.obj_head = response
+        return response
 
-    def get_obj_restore_status(self, file_name):
+    def get_obj_restore_status(self, object_name):
         """check_obj_status docstring
         https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.head_object
 
@@ -93,16 +92,16 @@ class AwsStorageMgmt:
         :param object_name: S3 object name. If not specified then file_name is used
         :return: True if file was uploaded, else False
         """
-        self.get_obj_head(file_name)
+        response = self.get_obj_head(object_name)
         try:
-            resp_string = response['Restore']
+            resp_string = response["Restore"]
             echo(resp_string)
-            if ('ongoing-request' in resp_string) and ('true' in resp_string):
-                status = 'incomplete'
-            elif ('ongoing-request' in resp_string) and ('false' in resp_string):
-                status = 'complete'
+            if ("ongoing-request" in resp_string) and ("true" in resp_string):
+                status = "incomplete"
+            elif ("ongoing-request" in resp_string) and ("false" in resp_string):
+                status = "complete"
             else:
-                status = 'unknown'
+                status = "unknown"
         except Exception as e:
             status = str(e)
         echo(status)
@@ -114,7 +113,7 @@ class AwsStorageMgmt:
 
         :param bucket: Bucket to download from
         :param object_name: S3 object name
-        :return: 
+        :return:
         """
         response = self.s3_client.restore_object(
             Bucket=self.bucket,
@@ -128,28 +127,28 @@ class AwsStorageMgmt:
         )
         return response
 
-    def download_from_glacier(self, file_name: str, object_name: str):
+    def download_from_glacier(self, object_name: str):
         """download_from_glacier docstring"""
 
         self.get_obj_head(object_name)
         try:
-            tier = self.obj_head['StorageClass']
-            if tier == 'DEEP_ARCHIVE':
+            tier = self.obj_head["StorageClass"]
+            if tier == "DEEP_ARCHIVE":
                 restore_tier = "Standard"
             elif tier == "GLACIER":
                 restore_tier = "Expedited"
         except KeyError as e:
-            echo(f'KeyError: {str(e)}, object not in glacier storage -- check control flow')
+            echo(f"KeyError: {str(e)}, object not in glacier storage -- check control flow")
             return
 
-        echo(f"restoring object from {tier}: {file_name}")
+        echo(f"restoring object from {tier}: {object_name}")
         self.restore_from_glacier(object_name=object_name, restore_tier=restore_tier)
         if tier == "GLACIER":
             restored = False
             while restored == False:
                 sleep(30)
                 echo("checking...")
-                status = self.get_obj_restore_status(file_name)
+                status = self.get_obj_restore_status(object_name)
                 if status == "incomplete":
                     pass
                 elif status == "complete":
@@ -160,7 +159,10 @@ class AwsStorageMgmt:
                     return
 
             echo("downloading restored file")
-            return self.download_file(file_name=file_name, object_name=object_name)
+            return self.download_file(object_name=object_name)
         else:
             echo(f"object in {tier}, object will be restored in 12-24 hours")
             return
+
+
+aws = AwsStorageMgmt()
