@@ -36,6 +36,11 @@ This is a summary
 ### setup media computer
 - search and download files accross machines on local network
 - [ssh into machine](https://superuser.com/questions/413718/how-to-connect-2-macs-via-ssh-on-a-home-network), list files in media directory, zip file, then [scp to local machine](https://stackoverflow.com/questions/68335/how-to-copy-a-file-to-a-remote-server-in-python-using-scp-or-ssh)
+### package project and publish to PyPI
+- follow standard pattern: pip install then `mmgmt configure` to setup package
+- [click app template using cookiecutter](https://github.com/simonw/click-app)
+- [example](https://github.com/simonw/google-drive-to-sqlite)
+- [PyPI docs](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
 
 ## Notes
 ### Workflows

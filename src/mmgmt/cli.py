@@ -101,6 +101,7 @@ def get_status(filename):
     prompt=f"Are you sure you want to delete?",
 )
 def delete(filename):
+    # use as test: media_uploads/Tron_Legacy_(2010)_BRRip_XvidHD_720p-NPW.zip
     click.echo(f"{filename} dropped from S3")
     click.echo("jk, command not yet complete")
 
