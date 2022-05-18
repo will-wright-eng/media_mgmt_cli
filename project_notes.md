@@ -43,6 +43,24 @@ This is a summary
 - [PyPI docs](https://packaging.python.org/en/latest/tutorials/packaging-projects/)
 
 ## Notes
+### name is a little clunkly
+AWS S3 media asset managment cli
+
+mam - as in ma'm
+mama - whut up mama
+asmamc - what?
+meas
+mass
+medam
+measm
+masm
+massma
+maam
+maam
+meam
+media
+ass
+
 ### Workflows
 upload
 	-> search to confirm (check local size is equal to S3 object size) 

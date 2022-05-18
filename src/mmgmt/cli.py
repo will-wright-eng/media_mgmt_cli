@@ -13,6 +13,7 @@ from .utils import utils as utils
 
 
 @click.group()
+@click.version_option()
 def mmgmt():
     pass
 
