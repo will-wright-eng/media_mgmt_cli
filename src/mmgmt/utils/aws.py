@@ -43,7 +43,7 @@ class AwsStorageMgmt:
         echo("success? True\n")
         return True
 
-    def download_file(self, object_name:str):
+    def download_file(self, object_name: str):
         """Download file from S3 to local
         https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-example-download-file.html
 
@@ -61,7 +61,7 @@ class AwsStorageMgmt:
             echo("success? False")
             os.remove(file_name)
             status = self.get_obj_restore_status(object_name)
-            if status =="incomplete":
+            if status == "incomplete":
                 echo("restore in process")
                 echo(json.dumps(aws.obj_head, indent=4, sort_keys=True, default=str))
             elif e.response["Error"]["Code"] == "InvalidObjectState":
@@ -138,7 +138,9 @@ class AwsStorageMgmt:
             elif tier == "GLACIER":
                 restore_tier = "Expedited"
         except KeyError as e:
-            echo(f"KeyError: {str(e)}, object not in glacier storage -- check control flow")
+            echo(
+                f"KeyError: {str(e)}, object not in glacier storage -- check control flow"
+            )
             return
 
         echo(f"restoring object from {tier}: {object_name}")

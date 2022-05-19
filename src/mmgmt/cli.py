@@ -35,7 +35,9 @@ def upload(file_or_dir, compression):
                 click.echo(f"uploading all media objects to S3")
                 for _file_or_dir in localfiles:
                     click.echo(f"{_file_or_dir}, compressing...")
-                    files_created.append(utils.upload_file_or_dir(_file_or_dir, compression))
+                    files_created.append(
+                        utils.upload_file_or_dir(_file_or_dir, compression)
+                    )
             elif file_or_dir in localfiles:
                 click.echo("file found, compressing...")
                 files_created.append(utils.upload_file_or_dir(file_or_dir, compression))
@@ -99,7 +101,7 @@ def get_status(filename):
     is_flag=True,
     callback=utils.abort_if_false,
     expose_value=False,
-    prompt=f"Are you sure you want to delete?",
+    prompt=f"Are you sure you want to delete {filename}?",
 )
 def delete(filename):
     # use as test: media_uploads/Tron_Legacy_(2010)_BRRip_XvidHD_720p-NPW.zip

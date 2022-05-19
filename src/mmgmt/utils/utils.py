@@ -80,7 +80,9 @@ def files_in_media_dir() -> List[str]:
     media_dir = os.getenv("LOCAL_MEDIA_DIR")
     tmp = os.listdir(media_dir)
     tmp = [
-        os.listdir(os.path.join(media_dir, folder)) if os.path.isdir(os.path.join(media_dir, folder)) else [folder]
+        os.listdir(os.path.join(media_dir, folder))
+        if os.path.isdir(os.path.join(media_dir, folder))
+        else [folder]
         for folder in tmp
     ]
     return [item for sublist in tmp for item in sublist]
