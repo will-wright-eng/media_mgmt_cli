@@ -26,39 +26,42 @@ AWS info
 """
 
 import os
+import pathlib
 import configparser
-from pathlib import Path
+
 
 class ConfigHandler:
-    def __init__():
-        self.home_path = os.environ.get("HOME", None)
-        self.config_path = os.path.join(home_path,'.mmgmt','config')
+    def __init__(self, project_name):
+        p = pathlib.Path.home()
+        self.home_path = p
+        self.config_path = p / ".config" / project_name
+        self.config_file_path = self.config_path / "config"
 
         self.config = configparser.ConfigParser()
-        if os.path.isfile(path)
-            self.config.read(config_path)
+        if os.path.isfile(self.config_file_path):
+            self.config.read(self.config_file_path)
+            print("-- config file exists --")
+            print(self.config.defaults())
 
     def export_configs(self):
         # export configs as environment variables
-        x = self.config['test1']
-        for key in x:
-            print(key, x.get(key))
-            os.environ[key.upper()] = x.get(key)   
+        for key, val in self.config.defaults().items():
+            os.environ[key.upper()] = val
+
+    def print_configs(self):
+        for key, val in self.config.defaults().items():
+            print(key.upper(), val)
 
     def write_config_file(self):
         # rewrite config file
-        with open(self.config_path, 'w') as configfile:
+        with open(self.config_file_path, "w") as configfile:
             self.config.write(configfile)
 
     def create_file_and_dir(self):
-        try:
-            os.mkdir(os.path.join(self.home_path,'.mmgmt'))
-        except FileExistsError as e:
-            print(e)
+        self.config_path.mkdir(parents=True, exist_ok=True)
+        self.config_file_path.touch()
 
-        Path(self.config_path).touch()
-
-    def config_file_input(config_dict: dict, section: str = "DEFAULT"):
+    def config_file_input(self, config_dict: dict, section: str = "DEFAULT"):
         """
         example:
         config['DEFAULT'] = {'ServerAliveInterval': '45',
@@ -66,4 +69,62 @@ class ConfigHandler:
                       'CompressionLevel': '8',}
         """
         self.config[section] = config_dict
-        
+
+    def write_config_file_from_dict(self, config_dict: dict):
+        self.config_file_input(config_dict)
+        self.write_config_file()
+
+    def get_configs(self):
+        if os.path.isfile(self.config_file_path):
+            return self.config.defaults()
+        else:
+            return None
+
+
+def write_secret_to_local_config(project_name):
+    config = ConfigHandler(project_name)
+    secrets_prefix = "projects/dev"
+    secret = aws.get_secret(os.path.join(secrets_prefix, project_name))
+    config.write_config_file_from_dict(config_dict=secret)
+    return config.print_configs()
+
+
+# for project_name in projects:
+#     write_secret_to_local_config(project_name)
+
+
+def find_all(name, path):
+    result = []
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            result.append(os.path.join(root, name))
+    return result
+
+
+def create_res_dict_from_envrc():
+    files = find_all(".envrc", "../.")
+    projects = ["media_mgmt_cli", "twl_app"]
+    res = {}
+    for file_path, project_name in zip(files, projects):
+        tmp_res = {}
+        with open(file_path, "r") as file:
+            tmp_lines = file.readlines()
+            for pos, line in enumerate(tmp_lines):
+                tmp_var = line.replace("\n", "").replace("export ", "").split("=")
+                if "KEY" in tmp_var[0]:
+                    pass
+                else:
+                    tmp_res[tmp_var[0]] = tmp_var[1]
+        res[project_name] = tmp_res
+    return res
+
+
+def create_secret_from_dict(project_name, secrets_dict):
+    secrets_prefix = "projects/dev"
+    secret_name = os.path.join(secrets_prefix, project_name)
+    secret_string = json.dumps(secrets_dict)
+    return aws.create_secret(secret_string, secret_name)
+
+
+# for project_name in projects:
+#     create_secret_from_dict(project_name, secrets_dict=res[project_name])
