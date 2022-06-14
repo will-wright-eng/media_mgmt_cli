@@ -22,13 +22,23 @@ import boto3
 from click import echo
 from botocore.exceptions import ClientError
 
+from .config import ConfigHandler
+
 
 class AwsStorageMgmt:
     def __init__(self):
         self.s3_resour = boto3.resource("s3")
         self.s3_client = boto3.client("s3")
-        self.bucket = os.getenv("AWS_BUCKET")
-        self.object_prefix = os.getenv("AWS_BUCKET_PATH")
+        self.bucket = os.getenv("AWS_BUCKET", None)
+        self.object_prefix = os.getenv("AWS_BUCKET_PATH", None)
+        if (self.bucket is None) or (self.object_prefix is None):
+            # get values from config file
+            config = ConfigHandler("media_mgmt_cli")
+            if config.check_config_exists():
+                # export configs to env vars
+                config.export_configs()
+            else:
+                echo("config file does not exist, run `mmgmt configure`")
 
     def upload_file(self, file_name, object_name=None):
         """Upload a file to an S3 bucket

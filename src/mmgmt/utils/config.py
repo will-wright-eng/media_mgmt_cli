@@ -46,11 +46,13 @@ class ConfigHandler:
     def export_configs(self):
         # export configs as environment variables
         for key, val in self.config.defaults().items():
-            os.environ[key.upper()] = val
-
+            if key is not None:
+                os.environ[key.upper()] = val
+            
     def print_configs(self):
         for key, val in self.config.defaults().items():
-            print(key.upper(), val)
+            if key is not None:
+                print(key.upper(),(20-int(len(key)))*' ', val)
 
     def write_config_file(self):
         # rewrite config file
@@ -79,6 +81,9 @@ class ConfigHandler:
             return self.config.defaults()
         else:
             return None
+
+    def check_config_exists(self):
+        return os.path.isfile(self.config_file_path)
 
 
 def write_secret_to_local_config(project_name):
