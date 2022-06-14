@@ -9,9 +9,27 @@ https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/secre
 # secret_string = json.dumps(secret)
 # aws.create_secret(secret_string,secret_name)
 
+## write aws secrets to local
+
+from .aws import AwsSecretMgmt
+
+aws_secret = AwsSecretMgmt()
+
+def write_secret_to_local_config(project_name):
+    config = ConfigHandler(project_name)
+    secrets_prefix = "projects/dev"
+    secret = aws_secret.get_secret(os.path.join(secrets_prefix, project_name))
+    config.write_config_file_from_dict(config_dict=secret)
+    return config.print_configs()
+
+for project_name in projects:
+    write_secret_to_local_config(project_name)
+
+    
 https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html
 """
 
+import os
 import json
 import base64
 import pathlib
@@ -22,7 +40,7 @@ import boto3
 from click import echo
 from botocore.exceptions import ClientError
 
-from .config import ConfigHandler
+from .config import config_handler
 
 
 class AwsStorageMgmt:
@@ -33,9 +51,10 @@ class AwsStorageMgmt:
         self.object_prefix = os.getenv("AWS_BUCKET_PATH", None)
         if (self.bucket is None) or (self.object_prefix is None):
             # get values from config file
-            config = ConfigHandler("media_mgmt_cli")
+            config = config_handler
             if config.check_config_exists():
                 # export configs to env vars
+                # TODO: this doesn't work --> create bash file that runs in .zshrc via source
                 config.export_configs()
             else:
                 echo("config file does not exist, run `mmgmt configure`")

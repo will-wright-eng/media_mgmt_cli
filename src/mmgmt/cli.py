@@ -2,6 +2,7 @@
 
 import os
 import json
+import subprocess
 from pathlib import Path
 from typing import List
 
@@ -9,8 +10,10 @@ import click
 import boto3
 
 from .utils.aws import aws
-from .utils.config import ConfigHandler
+from .utils.config import config_handler
 from .utils import utils as utils
+
+aws = AwsStorageMgmt()
 
 
 @click.group()
@@ -126,7 +129,7 @@ def ls(location):
 def configure(location):
     if location == "local":
         # grab values from ~/.config/media_mgmt_cli/config file
-        config = ConfigHandler(project_name="media_mgmt_cli")
+        config = config_handler
         config_dict = config.get_configs()
         if config_dict is None:
             current_values = [None] * int(len(config_list))
@@ -146,9 +149,13 @@ def configure(location):
 
     res = {}
     for config, current_value in zip(config_list, current_values):
-        value = click.prompt(f"{config} [{current_value}]:", type=str, default=current_value)
+        value = click.prompt(f"{config} ", type=str, default=current_value)
         res[config] = value
 
+    # value = click.prompt("kernal language? ", type=str, default='zsh')
+    # if value=='zsh':
+    #     subprocess.run(f'echo "" >> ~/.{value}rc')
+    #     subprocess.run(f'echo "source ~/.config/media_mgmt_cli/export.sh" >> ~/.{value}rc')
     value = click.prompt("export to AWS Secrets Manager? [Y/n]", type=str)
     if value.lower() == "y":
         # export to AWS

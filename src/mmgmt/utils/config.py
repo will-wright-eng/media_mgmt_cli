@@ -22,7 +22,6 @@ export AWS_MEDIA_BUCKET=media-backup-files
 
 AWS info
 - aws bucket
-
 """
 
 import os
@@ -48,11 +47,11 @@ class ConfigHandler:
         for key, val in self.config.defaults().items():
             if key is not None:
                 os.environ[key.upper()] = val
-            
+
     def print_configs(self):
         for key, val in self.config.defaults().items():
             if key is not None:
-                print(key.upper(),(20-int(len(key)))*' ', val)
+                print(key.upper(), (20 - int(len(key))) * " ", val)
 
     def write_config_file(self):
         # rewrite config file
@@ -86,16 +85,7 @@ class ConfigHandler:
         return os.path.isfile(self.config_file_path)
 
 
-def write_secret_to_local_config(project_name):
-    config = ConfigHandler(project_name)
-    secrets_prefix = "projects/dev"
-    secret = aws.get_secret(os.path.join(secrets_prefix, project_name))
-    config.write_config_file_from_dict(config_dict=secret)
-    return config.print_configs()
-
-
-# for project_name in projects:
-#     write_secret_to_local_config(project_name)
+config_handler = ConfigHandler(project_name="media_mgmt_cli")
 
 
 def find_all(name, path):
