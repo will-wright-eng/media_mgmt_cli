@@ -13,9 +13,6 @@ media management CLI - config setup
 - check for .mmgmt dorectory in HOME --> .mmgmt/config
 - mkdir $HOME/.mmgmt
 - touch $HOME/.mmgmt/config
-
-AWS info
-- aws bucket
 """
 
 import os
