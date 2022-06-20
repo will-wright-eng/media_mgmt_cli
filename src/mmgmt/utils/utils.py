@@ -2,6 +2,7 @@ import os
 import gzip
 import shutil
 import tarfile
+import pathlib
 from pathlib import Path
 from zipfile import ZipFile
 from typing import List
@@ -77,7 +78,9 @@ def keyword_in_string(keyword, file):
 
 
 def files_in_media_dir() -> List[str]:
-    media_dir = os.getenv("LOCAL_MEDIA_DIR")
+    # media_dir = os.getenv("LOCAL_MEDIA_DIR")
+    media_dir = pathlib.Path.home() / "media"
+    media_dir = media_dir.resolve()
     tmp = os.listdir(media_dir)
     tmp = [
         os.listdir(os.path.join(media_dir, folder)) if os.path.isdir(os.path.join(media_dir, folder)) else [folder]

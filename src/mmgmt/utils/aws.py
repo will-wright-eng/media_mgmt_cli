@@ -1,18 +1,36 @@
+"""
+https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html
+"""
+
 import os
 import json
+import base64
+import pathlib
+import configparser
 from time import sleep
 
 import boto3
 from click import echo
 from botocore.exceptions import ClientError
 
+from .config import config_handler
+
 
 class AwsStorageMgmt:
     def __init__(self):
         self.s3_resour = boto3.resource("s3")
         self.s3_client = boto3.client("s3")
-        self.bucket = os.getenv("AWS_BUCKET")
-        self.object_prefix = os.getenv("AWS_BUCKET_PATH")
+        self.bucket = os.getenv("AWS_BUCKET", None)
+        self.object_prefix = os.getenv("AWS_BUCKET_PATH", None)
+        if (self.bucket is None) or (self.object_prefix is None):
+            # get values from config file
+            config = config_handler
+            if config.check_config_exists():
+                # export configs to env vars
+                # TODO: this doesn't work --> create bash file that runs in .zshrc via source
+                config.export_configs()
+            else:
+                echo("config file does not exist, run `mmgmt configure`")
 
     def upload_file(self, file_name, object_name=None):
         """Upload a file to an S3 bucket
@@ -43,7 +61,7 @@ class AwsStorageMgmt:
         echo("success? True\n")
         return True
 
-    def download_file(self, object_name:str):
+    def download_file(self, object_name: str):
         """Download file from S3 to local
         https://boto3.amazonaws.com/v1/documentation/api/latest/guide/s3-example-download-file.html
 
@@ -61,7 +79,7 @@ class AwsStorageMgmt:
             echo("success? False")
             os.remove(file_name)
             status = self.get_obj_restore_status(object_name)
-            if status =="incomplete":
+            if status == "incomplete":
                 echo("restore in process")
                 echo(json.dumps(aws.obj_head, indent=4, sort_keys=True, default=str))
             elif e.response["Error"]["Code"] == "InvalidObjectState":

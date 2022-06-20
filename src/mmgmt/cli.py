@@ -2,6 +2,7 @@
 
 import os
 import json
+# import subprocess
 from pathlib import Path
 from typing import List
 
@@ -9,7 +10,10 @@ import click
 import boto3
 
 from .utils.aws import aws
+from .utils.config import config_handler
 from .utils import utils as utils
+
+aws = AwsStorageMgmt()
 
 
 @click.group()
@@ -120,9 +124,48 @@ def ls(location):
         click.echo(file)
 
 
+@click.command()
+@click.option("-l", "--location", "location", required=False)
+def configure(location):
+    if location == "local":
+        # grab values from ~/.config/media_mgmt_cli/config file
+        config = config_handler
+        config_dict = config.get_configs()
+        if config_dict is None:
+            current_values = [None] * int(len(config_list))
+        else:
+            current_values = [val for key, val in config_dict.items()]
+            config_list = [key.upper() for key, val in config_dict.items()]
+    elif location == "aws":
+        # grab values from projects/dev/media_mgmt_cli secrets string
+        pass
+    else:
+        config_list = [
+            "AWS_MEDIA_BUCKET",
+            "AWS_BUCKET_PATH",
+            "LOCAL_MEDIA_DIR",
+        ]
+        current_values = [None] * int(len(config_list))
+
+    res = {}
+    for config, current_value in zip(config_list, current_values):
+        value = click.prompt(f"{config} ", type=str, default=current_value)
+        res[config] = value
+
+    # value = click.prompt("kernal language? ", type=str, default='zsh')
+    # if value=='zsh':
+    #     subprocess.run(f'echo "" >> ~/.{value}rc')
+    #     subprocess.run(f'echo "source ~/.config/media_mgmt_cli/export.sh" >> ~/.{value}rc')
+    value = click.prompt("export to AWS Secrets Manager? [Y/n]", type=str)
+    if value.lower() == "y":
+        # export to AWS
+        pass
+
+
 mmgmt.add_command(upload)
 mmgmt.add_command(download)
 mmgmt.add_command(delete)
 mmgmt.add_command(search)
 mmgmt.add_command(ls)
 mmgmt.add_command(get_status)
+mmgmt.add_command(configure)
