@@ -14,12 +14,6 @@ media management CLI - config setup
 - mkdir $HOME/.mmgmt
 - touch $HOME/.mmgmt/config
 
-# what to inlcude in config file (store as yaml)
-export AWS_BUCKET=media-backup-files
-export AWS_BUCKET_PATH=media_uploads
-export LOCAL_MEDIA_DIR=/Users/willwright/media/
-export AWS_MEDIA_BUCKET=media-backup-files
-
 AWS info
 - aws bucket
 """
@@ -39,8 +33,8 @@ class ConfigHandler:
         self.config = configparser.ConfigParser()
         if os.path.isfile(self.config_file_path):
             self.config.read(self.config_file_path)
-            print("-- config file exists --")
-            print(self.config.defaults())
+            # print("-- config file exists --")
+            # print(self.config.defaults())
 
     def export_configs(self):
         # export configs as environment variables
